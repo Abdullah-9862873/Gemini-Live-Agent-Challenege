@@ -1,3 +1,13 @@
+---
+title: Gemini Live Agent Challenge
+emoji: 🤖
+colorFrom: blue
+colorTo: purple
+sdk: docker
+app_file: Dockerfile
+pinned: false
+---
+
 # 🤖 AI Multimodal Tutor
 
 <div align="center">
