@@ -305,7 +305,10 @@ class GitHubIngestor:
         extensions: Optional[List[str]] = None
     ) -> List[Dict[str, Any]]:
         """
-        Fetch entire repository and return chunked content.
+        Fetch entire repository via ZIP download and return chunked content.
+        
+        This method downloads the repo as a ZIP archive instead of using
+        the GitHub API to avoid rate limiting (60 requests/hour for unauthenticated).
         
         Args:
             extensions: Filter by file extensions
@@ -313,40 +316,69 @@ class GitHubIngestor:
         Returns:
             List of all chunks with metadata
         """
-        logger.info(f"Fetching repository: {self.repo}")
+        logger.info(f"Fetching repository via ZIP: {self.repo}")
         
         # Default extensions to fetch
         if extensions is None:
             extensions = [".md", ".txt", ".py", ".js", ".ts", ".java"]
         
-        # Get all files
-        files = self.get_all_files(extensions=extensions)
-        logger.info(f"Found {len(files)} files to process")
-        
         all_chunks = []
         
-        for file_path in files:
-            try:
-                logger.info(f"Processing: {file_path}")
+        # Try main branch first, then master
+        branches = ["main", "master"]
+        
+        for branch in branches:
+            zip_url = f"https://github.com/{self.repo}/archive/refs/heads/{branch}.zip"
+            logger.info(f"Trying branch: {branch}")
+            response = requests.get(zip_url, timeout=30)
+            
+            if response.status_code == 200:
+                logger.info(f"Successfully downloaded ZIP from {branch} branch")
+                break
+        else:
+            raise Exception(f"Could not download repository {self.repo} - no valid branch found")
+        
+        # Process ZIP file in memory
+        try:
+            with zipfile.ZipFile(io.BytesIO(response.content)) as z:
+                logger.info(f"ZIP contains {len(z.infolist())} items")
                 
-                # Get file content
-                content = self.get_file_content(file_path)
-                
-                # Extract metadata
-                metadata = self.extract_metadata(file_path, content)
-                
-                # Chunk content
-                chunks = self.chunk_content(content)
-                
-                # Add metadata to each chunk
-                for chunk in chunks:
-                    chunk.update(metadata)
-                
-                all_chunks.extend(chunks)
-                
-            except Exception as e:
-                logger.warning(f"Failed to process {file_path}: {e}")
-                continue
+                for file_info in z.infolist():
+                    if file_info.is_dir():
+                        continue
+                    
+                    file_path = file_info.filename
+                    
+                    # Skip files not matching extensions
+                    if extensions:
+                        file_name = file_path.split("/")[-1] if "/" in file_path else file_path
+                        file_ext = Path(file_name).suffix
+                        if file_ext not in extensions:
+                            continue
+                    
+                    try:
+                        with z.open(file_info) as f:
+                            content = f.read().decode('utf-8', errors='ignore')
+                        
+                        if not content.strip():
+                            continue
+                        
+                        logger.info(f"Processing: {file_path}")
+                        
+                        metadata = self.extract_metadata(file_path, content)
+                        chunks = self.chunk_content(content)
+                        
+                        for chunk in chunks:
+                            chunk.update(metadata)
+                        
+                        all_chunks.extend(chunks)
+                        
+                    except Exception as e:
+                        logger.warning(f"Skipping {file_path}: {e}")
+                        continue
+        
+        except zipfile.BadZipFile:
+            raise Exception(f"Invalid ZIP file for repository {self.repo}")
         
         logger.info(f"Total chunks generated: {len(all_chunks)}")
         return all_chunks
