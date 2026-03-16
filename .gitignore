@@ -76,3 +76,7 @@ logs/
 .pytest_cache/
 .coverage
 htmlcov/
+
+implementation.md
+plan.txt
+
