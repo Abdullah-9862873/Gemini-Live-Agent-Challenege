@@ -49,8 +49,8 @@ Phase 1: Project Setup & Infrastructure (Day 1 - Morning)
    PINECONE_API_KEY=your_pinecone_key
    PINECONE_ENVIRONMENT=us-east-1
    GEMINI_API_KEY=your_gemini_key
-   GITHUB_TOKEN=your_github_token
    GITHUB_REPO=owner/repo-name
+   # Note: No GitHub token required for public repositories
    GOOGLE_CLOUD_PROJECT=your-gcp-project
 
 5. Set up Google Cloud
