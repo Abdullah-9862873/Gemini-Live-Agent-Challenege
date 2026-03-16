@@ -1,0 +1,25 @@
+{
+  "name": "ai-tutor-frontend",
+  "version": "1.0.0",
+  "description": "AI Multimodal Tutor - Frontend Application",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "next": "^14.1.0",
+    "axios": "^1.6.7",
+    "prismjs": "^1.29.0",
+    "react-syntax-highlighter": "^15.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "typescript": "^5.3.0"
+  }
+}
