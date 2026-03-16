@@ -43,6 +43,10 @@ export default function Home() {
   const [isValidating, setIsValidating] = useState<boolean>(false);
   const [mode, setMode] = useState<Mode>('repo');
   const [ingestedRepo, setIngestedRepo] = useState<string>('');
+  
+  // Single file state
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [isFileUploaded, setIsFileUploaded] = useState<boolean>(false);
 
   // Check API connection on mount
   useEffect(() => {
@@ -116,17 +120,31 @@ export default function Home() {
       setError('Please ingest a GitHub repository first');
       return;
     }
+    
+    if (mode === 'single-file' && !isFileUploaded) {
+      setError('Please upload a file first');
+      return;
+    }
 
     setIsLoading(true);
     setError('');
     
     try {
-      const result = await apiService.askQuestion({
-        question,
-        top_k: 5,
-        threshold: 0.7,
-        prompt_type: 'default',
-      });
+      let result;
+      
+      if (mode === 'single-file') {
+        // Ask about single file
+        result = await apiService.askSingleFile(question);
+      } else {
+        // Ask about repo
+        result = await apiService.askQuestion({
+          question,
+          top_k: 5,
+          threshold: 0.7,
+          prompt_type: 'default',
+        });
+      }
+      
       setResponse(result);
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to get answer');
@@ -139,15 +157,33 @@ export default function Home() {
     handleAskQuestion(transcript);
   };
 
-  const handleFileSelect = (file: File) => {
+  const handleFileSelect = async (file: File) => {
     console.log('File selected:', file.name);
-    // For Phase 6 - handle single file upload
+    setUploadedFile(file);
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      // Upload and ingest the file
+      const result = await apiService.ingestSingleFile(file);
+      console.log('File ingested:', result);
+      setIsFileUploaded(true);
+      alert(`File "${file.name}" uploaded successfully! Now you can ask questions about it.`);
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Failed to upload file');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const switchMode = (newMode: Mode) => {
     setMode(newMode);
     setResponse(null);
     setError('');
+    if (newMode === 'single-file') {
+      setUploadedFile(null);
+      setIsFileUploaded(false);
+    }
   };
 
   return (
@@ -279,14 +315,24 @@ export default function Home() {
         {/* Single File Mode */}
         {mode === 'single-file' && (
           <div className={styles.singleFileSection}>
-            <div className={styles.fileUploadNote}>
-              📄 Upload a single file to ask questions about it specifically.
-              This is useful when you want to understand a particular file in detail.
-            </div>
-            <FileUpload
-              onFileSelect={handleFileSelect}
-              disabled={!isConnected}
-            />
+            {!isFileUploaded ? (
+              <>
+                <div className={styles.fileUploadNote}>
+                  📄 Upload a single file to ask questions about it specifically.
+                  This is useful when you want to understand a particular file in detail.
+                </div>
+                <FileUpload
+                  onFileSelect={handleFileSelect}
+                  disabled={!isConnected || isLoading}
+                />
+              </>
+            ) : (
+              <div className={styles.fileUploadedInfo}>
+                ✅ <strong>{uploadedFile?.name}</strong> is uploaded and ready!
+                <br />
+                <small>You can now ask questions about this file.</small>
+              </div>
+            )}
           </div>
         )}
 

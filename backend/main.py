@@ -589,6 +589,180 @@ async def rag_query(
         )
 
 
+# =============================================================================
+# SINGLE FILE ENDPOINTS (Phase 6 - IMPLEMENTED)
+# =============================================================================
+
+from typing import Annotated
+from fastapi import UploadFile, File, Form
+
+
+@app.post("/ingest/single", tags=["Ingestion"])
+async def ingest_single_file(
+    file: UploadFile = File(...)
+):
+    """
+    Upload and ingest a single file
+    
+    Phase: 6 (Multimodal I/O Features) - NOW IMPLEMENTED
+    
+    Accepts a single file upload, processes it, and stores in vector DB
+    for querying about that specific file.
+    
+    Args:
+        file: The file to upload and process
+    
+    Returns:
+        Processing results
+    """
+    from single_file import single_file_processor
+    
+    try:
+        # Read file content
+        content = await file.read()
+        content_str = content.decode('utf-8', errors='ignore')
+        
+        # Get file extension
+        _, ext = os.path.splitext(file.filename)
+        
+        # Process file
+        result = single_file_processor.process_file(
+            file_content=content_str,
+            file_name=file.filename,
+            file_extension=ext
+        )
+        
+        if result["status"] == "success":
+            return {
+                "status": "success",
+                "message": f"Successfully processed {file.filename}",
+                "file_name": file.filename,
+                "chunks_created": result.get("chunks_created", 0),
+                "vectors_stored": result.get("vectors_stored", 0)
+            }
+        else:
+            raise HTTPException(
+                status_code=500,
+                detail=result.get("message", "Failed to process file")
+            )
+    
+    except Exception as e:
+        logger.error(f"Error processing single file: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error processing file: {str(e)}"
+        )
+
+
+@app.post("/ask/single", tags=["Q&A"])
+async def ask_about_single_file(
+    question: str = Form(...),
+    top_k: int = 5
+):
+    """
+    Ask a question about the uploaded single file
+    
+    Phase: 6 (Multimodal I/O Features) - NOW IMPLEMENTED
+    
+    Searches within the uploaded single file content only.
+    
+    Args:
+        question: The question to ask
+        top_k: Number of context results
+    
+    Returns:
+        Answer based on single file content
+    """
+    from single_file import single_file_processor
+    from llm_chain import LLMChain
+    from multimodal import MultimodalGenerator
+    
+    logger.info(f"Single file question: {question}")
+    
+    try:
+        # Query single file content
+        query_result = single_file_processor.query_single_file(
+            question=question,
+            top_k=top_k
+        )
+        
+        # Check if we have content
+        if not query_result.get("has_context", False):
+            return {
+                "question": question,
+                "answer": "No file has been uploaded yet. Please upload a file first using /ingest/single endpoint.",
+                "has_context": False,
+                "context_used": False,
+                "sources": [],
+                "num_contexts": 0,
+                "top_score": 0.0
+            }
+        
+        # Get context
+        context_text = query_result.get("context_text", "")
+        contexts = query_result.get("contexts", [])
+        
+        # Generate answer with LLM
+        llm = LLMChain()
+        result = llm.generate_answer(
+            question=question,
+            context=context_text,
+            has_context=True,
+            prompt_type="default"
+        )
+        
+        answer_text = result.get("answer", "")
+        
+        # Extract code blocks
+        multimodal = MultimodalGenerator()
+        code_blocks = multimodal.extract_code_blocks(answer_text)
+        has_code = bool(code_blocks)
+        
+        # Get sources
+        sources = list(set([ctx.get("source", "") for ctx in contexts if ctx.get("source")]))
+        
+        return {
+            "question": question,
+            "answer": answer_text,
+            "has_context": True,
+            "context_used": True,
+            "sources": sources,
+            "num_contexts": len(contexts),
+            "top_score": contexts[0].get("score", 0) if contexts else 0,
+            "has_code": has_code,
+            "code_blocks": code_blocks
+        }
+    
+    except Exception as e:
+        logger.error(f"Error answering single file question: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error answering question: {str(e)}"
+        )
+
+
+@app.post("/ingest/single/clear", tags=["Ingestion"])
+async def clear_single_file():
+    """
+    Clear all single file content from vector DB
+    
+    Phase: 6
+    
+    Removes all vectors stored from single file uploads.
+    """
+    from single_file import single_file_processor
+    
+    try:
+        result = single_file_processor.clear_single_file()
+        return result
+    except Exception as e:
+        logger.error(f"Error clearing single file: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error clearing file: {str(e)}"
+        )
+
+
 @app.post("/ask/voice", tags=["Q&A"])
 async def ask_voice():
     """
