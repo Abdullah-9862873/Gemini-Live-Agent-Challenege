@@ -1,14 +1,14 @@
 # =============================================================================
 # AI Multimodal Tutor - Main Application Entry Point
 # =============================================================================
-# Phase: 3 - RAG Pipeline (UPDATED)
-# Purpose: FastAPI backend with RAG pipeline endpoints
-# Version: 3.0.0
+# Phase: 4 - LLM Integration (COMPLETE)
+# Purpose: FastAPI backend with LLM-powered Q&A
+# Version: 4.0.0
 #
 # Endpoints:
 #   - GET  /health         : Health check
 #   - GET  /               : API information
-#   - POST /ask            : Text question with RAG (Phase 3-4)
+#   - POST /ask            : Text question with RAG + LLM (Phase 4 - NOW IMPLEMENTED)
 #   - POST /rag/query      : Direct RAG query (Phase 3)
 #   - POST /ask/voice      : Voice question (Phase 6)
 #   - POST /ask/upload     : Code/image upload (Phase 6)
@@ -20,7 +20,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional, List, Dict
 import logging
 import os
 from dotenv import load_dotenv
@@ -53,13 +53,13 @@ app = FastAPI(
     - Phase 1: Project Setup (COMPLETE)
     - Phase 2: Backend Core Components (COMPLETE)
     - Phase 3: RAG Pipeline (COMPLETE)
-    - Phase 4: LLM Integration
+    - Phase 4: LLM Integration (COMPLETE)
     - Phase 5: Frontend Development
     - Phase 6: Multimodal I/O Features
     - Phase 7: Integration & Testing
     - Phase 8: Deployment & Demo
     """,
-    version="3.0.0",
+    version="4.0.0",
     docs_url="/docs",
     redoc_url="/redoc"
 )
@@ -268,6 +268,7 @@ class AskRequest(BaseModel):
     top_k: Optional[int] = None
     threshold: Optional[float] = None
     prompt_type: Optional[str] = "default"
+    include_voice: Optional[bool] = False
 
 
 class AskResponse(BaseModel):
@@ -281,6 +282,9 @@ class AskResponse(BaseModel):
     sources: List[str] = []
     num_contexts: int = 0
     top_score: float = 0.0
+    has_code: bool = False
+    code_blocks: List[Dict[str, str]] = []
+    voice_audio: Optional[str] = None
 
 
 # =============================================================================
@@ -345,39 +349,49 @@ async def ask_question(request: AskRequest):
         )
     
     try:
-        # Run RAG pipeline to get context
-        rag = RAGPipeline(
+        # Validate Gemini API
+        configs = validate_all_configs()
+        if not configs["gemini"]:
+            raise HTTPException(
+                status_code=400,
+                detail="Gemini API key not configured"
+            )
+        
+        # Import LLM chain
+        from backend.llm_chain import LLMChain
+        from backend.multimodal import MultimodalGenerator
+        from backend.tts_service import TTSService
+        
+        # Run RAG + LLM to get answer
+        llm = LLMChain()
+        result = llm.generate_with_rag(
+            question=request.question,
             top_k=request.top_k,
-            threshold=request.threshold
+            threshold=request.threshold,
+            prompt_type=request.prompt_type
         )
         
-        rag_result = rag.run(
-            query=request.question,
-            include_sources=True
-        )
+        # Extract answer and metadata
+        answer_text = result.get("answer", "")
+        has_relevant_context = result.get("has_context", False)
+        sources = result.get("sources", [])
+        num_contexts = result.get("num_contexts", 0)
+        top_score = result.get("top_score", 0.0)
         
-        # Extract context information
-        has_relevant_context = rag_result.get("has_relevant_context", False)
-        context_text = rag_result.get("context_text", "")
-        contexts = rag_result.get("contexts", [])
+        # Extract code blocks
+        multimodal = MultimodalGenerator()
+        code_blocks = multimodal.extract_code_blocks(answer_text)
+        has_code = bool(code_blocks)
         
-        # Extract sources
-        sources = list(set([ctx.get("source", "") for ctx in contexts if ctx.get("source")]))
-        
-        # For Phase 3, we return the context directly
-        # Phase 4 will integrate LLM for actual answer generation
-        if has_relevant_context:
-            # Build a simple answer from context (Phase 3 only)
-            # Phase 4 will replace this with LLM-generated answer
-            answer_text = f"Found {len(contexts)} relevant context(s) from the course material.\n\n"
-            answer_text += "Context retrieved:\n" + context_text[:1000]
-            if len(context_text) > 1000:
-                answer_text += "\n... (truncated)"
-            
-            answer_text += "\n\nNote: This is raw context retrieval. LLM integration (Phase 4) will generate proper answers."
-        else:
-            answer_text = "No relevant context found in the course material for your question. "
-            answer_text += "Try rephrasing your question or ingest more course content."
+        # Generate voice if requested
+        voice_audio = None
+        if request.include_voice:
+            try:
+                tts = TTSService()
+                tts_result = tts.text_to_speech(answer_text)
+                voice_audio = tts_result.get("audio_base64")
+            except Exception as e:
+                logger.warning(f"TTS generation failed: {e}")
         
         return AskResponse(
             question=request.question,
@@ -385,10 +399,15 @@ async def ask_question(request: AskRequest):
             has_context=has_indexed_content,
             context_used=has_relevant_context,
             sources=sources,
-            num_contexts=len(contexts),
-            top_score=rag_result.get("top_score", 0.0)
+            num_contexts=num_contexts,
+            top_score=top_score,
+            has_code=has_code,
+            code_blocks=code_blocks,
+            voice_audio=voice_audio
         )
     
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Question answering failed: {e}")
         raise HTTPException(

@@ -1,9 +1,9 @@
 # =============================================================================
 # AI Multimodal Tutor - Backend Dependencies
 # =============================================================================
-# Phase: 3 - RAG Pipeline
+# Phase: 4 - LLM Integration
 # Purpose: Core backend dependencies for FastAPI, Vector DB, RAG, and LLM
-# Version: 3.0.0
+# Version: 4.0.0
 # =============================================================================
 
 # FastAPI & Server
@@ -17,6 +17,9 @@ pinecone-client>=3.2.0
 # LLM & Embeddings
 google-generativeai>=0.5.3
 sentence-transformers>=2.4.0
+
+# Text-to-Speech (gTTS)
+gtts>=2.5.0
 
 # Environment & Config
 python-dotenv>=1.0.0

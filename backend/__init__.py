@@ -1,9 +1,9 @@
 # =============================================================================
 # AI Multimodal Tutor - Backend Package
 # =============================================================================
-# Phase: 3 - RAG Pipeline
+# Phase: 4 - LLM Integration
 # Purpose: Package initialization file
-# Version: 3.0.0
+# Version: 4.0.0
 # =============================================================================
 
 """
@@ -17,6 +17,9 @@ This package contains all backend components:
 - ingestion_pipeline: Complete ingestion workflow
 - rag_pipeline: Retrieval-Augmented Generation pipeline
 - prompt_templates: Prompt templates for RAG + LLM
+- llm_chain: Gemini LLM integration
+- multimodal: Multimodal output generator
+- tts_service: Text-to-Speech service
 """
 
-__version__ = "3.0.0"
+__version__ = "4.0.0"
