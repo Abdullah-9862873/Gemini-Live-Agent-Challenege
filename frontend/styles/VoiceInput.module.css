@@ -1,0 +1,56 @@
+.container {
+  display: inline-block;
+}
+
+.voiceButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #f5f5f5;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.voiceButton:hover:not(:disabled) {
+  background: #e8e8e8;
+  border-color: #ccc;
+}
+
+.voiceButton.listening {
+  background: #ffeaea;
+  border-color: #ff6b6b;
+  animation: pulse 1s infinite;
+}
+
+.voiceButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.micIcon {
+  font-size: 1.2rem;
+}
+
+.error {
+  color: #ff4444;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+.transcript {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: #f5f7fa;
+  border-radius: 4px;
+  font-style: italic;
+  color: #666;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}

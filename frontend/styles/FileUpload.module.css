@@ -1,0 +1,80 @@
+.container {
+  display: inline-block;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.uploadButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #f5f5f5;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.uploadButton:hover:not(:disabled) {
+  background: #e8e8e8;
+  border-color: #ccc;
+}
+
+.uploadButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.uploadIcon {
+  font-size: 1.2rem;
+}
+
+.fileInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.fileName {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.clearButton {
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  padding: 0.25rem;
+}
+
+.clearButton:hover {
+  color: #ff4444;
+}
+
+.preview {
+  margin-top: 0.5rem;
+  max-height: 200px;
+  overflow: auto;
+}
+
+.imagePreview {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 4px;
+}
+
+.codePreview {
+  background: #f5f5f5;
+  padding: 0.75rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  max-height: 150px;
+}

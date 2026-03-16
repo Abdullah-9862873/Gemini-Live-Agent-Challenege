@@ -11,7 +11,7 @@ import re
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 import logging
-from backend.config import settings
+from config import settings
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

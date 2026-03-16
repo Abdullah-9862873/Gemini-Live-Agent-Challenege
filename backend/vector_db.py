@@ -9,7 +9,7 @@
 from pinecone import Pinecone, ServerlessSpec
 from typing import List, Dict, Any, Optional
 import logging
-from backend.config import settings
+from config import settings
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

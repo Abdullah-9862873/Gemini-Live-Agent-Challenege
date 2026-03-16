@@ -92,11 +92,11 @@ async def root():
     """
     return {
         "name": "AI Multimodal Tutor API",
-        "version": "3.0.0",
+        "version": "4.0.0",
         "status": "running",
-        "phase": "Phase 3: RAG Pipeline Complete",
+        "phase": "Phase 4: LLM Integration Complete",
         "docs": "/docs",
-        "message": "Welcome to AI Multimodal Tutor! Phases 4-8 pending."
+        "message": "Welcome to AI Multimodal Tutor! Phases 5-8 pending."
     }
 
 
@@ -110,14 +110,15 @@ async def health_check():
     """
     return {
         "status": "healthy",
-        "phase": "Phase 3: RAG Pipeline",
-        "version": "3.0.0",
+        "phase": "Phase 4: LLM Integration",
+        "version": "4.0.0",
         "components": {
             "fastapi": "running",
             "pinecone": "configured",
             "embeddings": "configured",
             "github": "configured",
-            "rag_pipeline": "configured"
+            "rag_pipeline": "configured",
+            "llm": "configured"
         }
     }
 
@@ -169,8 +170,8 @@ async def ingest_course(request: Optional[IngestRequest] = None):
             "extensions": [".md", ".py", ".js"]
         }
     """
-    from backend.ingestion_pipeline import ingestion_pipeline
-    from backend.config import settings, validate_all_configs
+    from ingestion_pipeline import ingestion_pipeline
+    from config import settings, validate_all_configs
     
     logger.info("Ingestion request received")
     
@@ -233,8 +234,8 @@ async def get_ingestion_status():
     
     Returns information about the Vector DB index and last ingestion.
     """
-    from backend.vector_db import vector_db
-    from backend.config import settings
+    from vector_db import vector_db
+    from config import settings
     
     try:
         stats = vector_db.get_index_stats()
@@ -319,8 +320,8 @@ async def ask_question(request: AskRequest):
             "threshold": 0.7
         }
     """
-    from backend.rag_pipeline import RAGPipeline, check_context_available
-    from backend.config import validate_all_configs
+    from rag_pipeline import RAGPipeline, check_context_available
+    from config import validate_all_configs
     
     logger.info(f"Question received: {request.question}")
     
@@ -358,17 +359,17 @@ async def ask_question(request: AskRequest):
             )
         
         # Import LLM chain
-        from backend.llm_chain import LLMChain
-        from backend.multimodal import MultimodalGenerator
-        from backend.tts_service import TTSService
+        from llm_chain import LLMChain
+        from multimodal import MultimodalGenerator
+        from tts_service import TTSService
         
         # Run RAG + LLM to get answer
         llm = LLMChain()
         result = llm.generate_with_rag(
             question=request.question,
-            top_k=request.top_k,
-            threshold=request.threshold,
-            prompt_type=request.prompt_type
+            top_k=request.top_k or 5,
+            threshold=request.threshold or 0.7,
+            prompt_type=request.prompt_type or "default"
         )
         
         # Extract answer and metadata
@@ -438,7 +439,7 @@ async def rag_query(
     Returns:
         RAG pipeline results with contexts
     """
-    from backend.rag_pipeline import RAGPipeline
+    from rag_pipeline import RAGPipeline
     
     try:
         rag = RAGPipeline(top_k=top_k, threshold=threshold)

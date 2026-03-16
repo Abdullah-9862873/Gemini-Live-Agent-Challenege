@@ -1,0 +1,128 @@
+.container {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 3rem;
+  color: #666;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid #e0e0e0;
+  border-top-color: #4a90d9;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.empty {
+  text-align: center;
+  padding: 3rem;
+  color: #666;
+}
+
+.empty h2 {
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.empty .hint {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #888;
+}
+
+.questionSection,
+.answerSection,
+.codeSection,
+.sourcesSection {
+  margin-bottom: 1.5rem;
+}
+
+.label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+}
+
+.question {
+  background: #f5f7fa;
+  padding: 1rem;
+  border-radius: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.answer {
+  line-height: 1.7;
+}
+
+.answerText {
+  margin-bottom: 1rem;
+}
+
+.voiceButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #4a90d9;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.voiceButton:hover {
+  background: #3a7bc8;
+}
+
+.hiddenAudio {
+  display: none;
+}
+
+.codeSection {
+  margin-top: 1.5rem;
+}
+
+.codeBlock {
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.sourcesSection {
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.source {
+  background: #e8f4fd;
+  color: #4a90d9;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}

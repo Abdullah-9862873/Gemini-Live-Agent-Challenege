@@ -9,9 +9,9 @@
 import google.generativeai as genai
 from typing import Dict, Any, Optional, List
 import logging
-from backend.config import settings
-from backend.prompt_templates import PromptBuilder, PromptTemplates
-from backend.rag_pipeline import RAGPipeline
+from config import settings
+from prompt_templates import PromptBuilder, PromptTemplates
+from rag_pipeline import RAGPipeline
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

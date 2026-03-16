@@ -8,9 +8,9 @@
 
 from typing import List, Dict, Any, Optional, Union
 import logging
-from backend.vector_db import vector_db
-from backend.embeddings import embedding_model
-from backend.config import settings
+from vector_db import vector_db
+from embeddings import embedding_model
+from config import settings
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

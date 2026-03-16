@@ -8,9 +8,9 @@
 
 from typing import List, Dict, Any, Optional
 import logging
-from backend.github_ingest import GitHubIngestor, github_ingestor
-from backend.embeddings import EmbeddingModel, embedding_model
-from backend.vector_db import VectorDB, vector_db
+from github_ingest import GitHubIngestor, github_ingestor
+from embeddings import EmbeddingModel, embedding_model
+from vector_db import VectorDB, vector_db
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

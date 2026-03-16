@@ -10,8 +10,8 @@ import google.generativeai as genai
 from typing import Dict, Any, Optional, List
 import re
 import logging
-from backend.config import settings
-from backend.llm_chain import LLMChain
+from config import settings
+from llm_chain import LLMChain
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

@@ -10,7 +10,7 @@ from sentence_transformers import SentenceTransformer
 from typing import List, Union
 import numpy as np
 import logging
-from backend.config import settings
+from config import settings
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
