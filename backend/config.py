@@ -15,11 +15,11 @@ for path in possible_paths:
 
 
 class Settings:
-    pinecone_api_key = os.getenv("PINECONE_API_KEY", "")
-    pinecone_environment = os.getenv("PINECONE_ENVIRONMENT", "us-east-1")
-    pinecone_index_name = os.getenv("PINECONE_INDEX_NAME", "course-vectors")
+    pinecone_api_key = os.getenv("PINECONE_API_KEY", "").strip()
+    pinecone_environment = os.getenv("PINECONE_ENVIRONMENT", "us-east-1").strip()
+    pinecone_index_name = os.getenv("PINECONE_INDEX_NAME", "course-vectors").strip()
     
-    groq_api_key = os.getenv("GROQ_API_KEY", "")
+    groq_api_key = os.getenv("GROQ_API_KEY", "").strip()
     groq_model = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
     
     github_repo = os.getenv("GITHUB_REPO", "")
