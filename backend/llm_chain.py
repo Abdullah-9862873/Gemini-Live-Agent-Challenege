@@ -3,6 +3,7 @@ import time
 from typing import Dict, Any, Optional, List
 import logging
 from config import settings
+from utils import sanitize_error_message
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -96,10 +97,11 @@ Answer the question based on your knowledge. Provide a clear and helpful respons
                     continue
                 
                 else:
-                    logger.error(f"Groq API error: {response.status_code} - {response.text}")
+                    sanitized_error = sanitize_error_message(response.text)
+                    logger.error(f"Groq API error: {response.status_code} - {sanitized_error}")
                     return {
                         "status": "error",
-                        "error": f"API error {response.status_code}: {response.text}"
+                        "error": f"API error {response.status_code}: {sanitized_error}"
                     }
             
             except requests.exceptions.Timeout:

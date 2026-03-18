@@ -5,8 +5,8 @@ import gradio as gr
 import requests
 import json
 import os
+from utils import sanitize_error_message
 
-# API Configuration
 API_URL = os.getenv("API_URL", "http://localhost:8000")
 
 def check_health():
@@ -30,7 +30,7 @@ def validate_repo(repo_url):
             if data.get("is_public"):
                 return f"✅ Valid Public Repo: {data.get('repo')}\n📝 {data.get('description', 'No description')}"
             return f"❌ Private Repo: {data.get('message')}"
-        return f"❌ Error: {response.text}"
+        return f"❌ Validation Error: {sanitize_error_message(response.text)}"
     except Exception as e:
         return f"❌ Error: {str(e)}"
 
@@ -45,7 +45,7 @@ def ingest_repo(repo_url, extensions=".md,.py,.js,.ts,.txt,.java,.cpp,.go,.rs"):
         if response.status_code == 200:
             data = response.json()
             return f"✅ Ingestion Complete!\n📦 {data.get('message', 'Success')}"
-        return f"❌ Error: {response.text}"
+        return f"❌ Ingestion Error: {sanitize_error_message(response.text)}"
     except Exception as e:
         return f"❌ Error: {str(e)}"
 
@@ -65,7 +65,7 @@ def ask_question(question, top_k=5):
             if sources:
                 result += f"\n**Sources:** {', '.join(sources[:5])}"
             return result
-        return f"❌ Error: {response.text}"
+        return f"❌ API Error: {sanitize_error_message(response.text)}"
     except Exception as e:
         return f"❌ Error: {str(e)}"
 
@@ -85,7 +85,7 @@ def clear_data():
         response = requests.post(f"{API_URL}/ingest/clear", timeout=30)
         if response.status_code == 200:
             return "🗑️ Data cleared successfully!"
-        return f"❌ Error: {response.text}"
+        return f"❌ Clear Error: {sanitize_error_message(response.text)}"
     except Exception as e:
         return f"❌ Error: {str(e)}"
 
