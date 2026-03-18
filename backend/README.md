@@ -1,22 +1,28 @@
-# Making Repos Speakable - Backend API
+---
+title: Making Repos Speakable
+emoji: 🗣️
+colorFrom: blue
+colorTo: purple
+sdk: docker
+sdk_version: "3.10"
+app_file: main.py
+python_version: "3.10"
+pinned: false
+---
+
+# Making Repos Speakable
 
 **Give brain and tongue to your GitHub repositories.**
 
-This is the backend API for "Making Repos Speakable" - an AI-powered application that transforms GitHub repositories into interactive, queryable knowledge bases.
+An AI-powered application that transforms GitHub repositories into interactive, queryable knowledge bases using RAG (Retrieval-Augmented Generation) and Groq LLM.
 
 ## Features
 
 - GitHub repository validation and ingestion
 - RAG-powered Q&A with vector search
 - Single file upload support
+- Voice output with Text-to-Speech
 - Groq LLM integration (free, no billing)
-
-## Tech Stack
-
-- **FastAPI** - High-performance Python web framework
-- **Pinecone** - Vector database
-- **Groq API** - LLaMA 3.1 LLM (truly free)
-- **Sentence Transformers** - Embeddings
 
 ## API Endpoints
 
@@ -31,11 +37,12 @@ This is the backend API for "Making Repos Speakable" - an AI-powered application
 | POST | `/ask` | Ask a question |
 | POST | `/ask/single` | Ask about uploaded file |
 
-## Environment Variables
+## Environment Variables (Set in Space Secrets)
 
 - `GROQ_API_KEY` - Groq API key (get free at https://console.groq.com/)
 - `PINECONE_API_KEY` - Pinecone API key
-- `PINECONE_INDEX_NAME` - Pinecone index name
+- `PINECONE_INDEX_NAME` - Pinecone index name (e.g., `making-repos-speakable`)
+- `GITHUB_TOKEN` - GitHub token for private repos (optional)
 
 ## License
 
